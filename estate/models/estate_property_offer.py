@@ -27,6 +27,23 @@ class EstatePropertyOffer(models.Model):
         'El precio de la oferta debe ser mayor que cero.'
     )
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        # Verificar que la nueva oferta es mayor que las ofertas existentes
+        for vals in vals_list:
+            property_offers = self.search([('property_id', '=', vals['property_id'])])
+            for offer in property_offers:
+                if vals['price'] <= offer.price:
+                    raise UserError("El precio de la nueva oferta debe ser mayor que las ofertas existentes.")
+        
+        records = super().create(vals_list)
+        
+        # Al crear una oferta, cambiar el estado de la propiedad a 'offer_received'
+        for record in records:
+            record.property_id.state = 'offer_received'
+        
+        return records
+
     @api.depends('validity')
     def _compute_date_deadline(self):
         for record in self:

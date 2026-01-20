@@ -61,6 +61,19 @@ class EstateProperty(models.Model):
         'El precio de venta no puede ser negativo o cero.'
     )
 
+    @api.model
+    def create(self, vals):
+        if 'selling_price' in vals and vals['selling_price'] > 0:
+            raise ValidationError("No se puede establecer el precio de venta al crear una propiedad.")
+        return super().create(vals)
+
+    @api.ondelete(at_uninstall=False)
+    def _unlink_if_not_new_or_cancelled(self):
+        for record in self:
+            # It should not be possible to delete a property which is not new or cancelled
+            if record.state not in ['new', 'cancelled']:
+                raise UserError("No se puede eliminar una propiedad que no esté en estado 'nuevo' o 'cancelado'.")
+
     @api.constrains('selling_price', 'expected_price')
     def _check_selling_price(self):
         for record in self:
