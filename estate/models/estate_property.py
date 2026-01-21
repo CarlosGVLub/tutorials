@@ -50,6 +50,7 @@ class EstateProperty(models.Model):
     offer_ids = fields.One2many("estate.property.offer", "property_id", string="Ofertas")
     total_area = fields.Integer(string="Área Total (m²)", compute="_compute_total_area")
     best_price = fields.Float(string="Mejor Precio", compute="_compute_best_price")
+    company_id = fields.Many2one("res.company", string="Compañía", default=lambda self: self.env.company)
 
     _check_expected_price = models.Constraint(
         'CHECK(expected_price > 0)',
@@ -65,6 +66,8 @@ class EstateProperty(models.Model):
     def create(self, vals):
         if 'selling_price' in vals and vals['selling_price'] > 0:
             raise ValidationError("No se puede establecer el precio de venta al crear una propiedad.")
+        if 'company_id' not in vals:
+            vals['company_id'] = self.env.company.id
         return super().create(vals)
 
     @api.ondelete(at_uninstall=False)

@@ -73,6 +73,7 @@
                                 <field name="garden_orientation" invisible="not garden"/>
                                 <field name="total_area" readonly="1"/>
                                 <field name="property_type_id"  options="{'no_create': True}"/>
+                                <field name="company_id" options="{'no_create': True}"/>
                             </group>
                         </page>
                         <page string="Ofertas">
